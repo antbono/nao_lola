@@ -17,6 +17,8 @@
 #include "nao_lola_client/nao_lola_client.hpp"
 #include "nao_lola_client/msgpack_parser.hpp"
 
+#define DT 0.02
+
 NaoLolaClient::NaoLolaClient()
 : Node("NaoLolaClient")
 {
@@ -30,17 +32,23 @@ NaoLolaClient::NaoLolaClient()
         auto recvData = connection.receive();
         MsgpackParser parsed(recvData.data(), recvData.size());
 
-        auto time = now();
+        auto time = batteryToTimestamp(parsed.getBattery());
+        pub_clock_->publish(rosgraph_msgs::msg::Clock{}.set__clock(time));
+
+        // Use timestamp for accelerometer
         auto accelerometer = parsed.getAccelerometer();
         accelerometer.header.stamp = time;
         accelerometer_pub->publish(accelerometer);
+
         angle_pub->publish(parsed.getAngle());
         buttons_pub->publish(parsed.getButtons());
         fsr_pub->publish(parsed.getFSR());
 
+        // Use timestamp for gyroscope
         auto gyroscope = parsed.getGyroscope();
         gyroscope.header.stamp = time;
         gyroscope_pub->publish(gyroscope);
+
         joint_positions_pub->publish(parsed.getJointPositions());
         joint_stiffnesses_pub->publish(parsed.getJointStiffnesses());
         joint_temperatures_pub->publish(parsed.getJointTemperatures());
@@ -88,6 +96,7 @@ void NaoLolaClient::createPublishers()
   battery_pub = create_publisher<nao_lola_sensor_msgs::msg::Battery>("sensors/battery", 10);
   robot_config_pub =
     create_publisher<nao_lola_sensor_msgs::msg::RobotConfig>("sensors/robot_config", 10);
+  pub_clock_ = create_publisher<rosgraph_msgs::msg::Clock>("/clock", 1);
   RCLCPP_DEBUG(get_logger(), "Finished initialising publishers");
 }
 
@@ -193,4 +202,12 @@ void NaoLolaClient::createSubscriptions()
     }
     );
   RCLCPP_DEBUG(get_logger(), "Finished creating subscriptions");
+}
+
+builtin_interfaces::msg::Time NaoLolaClient::batteryToTimestamp(
+    const nao_lola_sensor_msgs::msg::Battery & msg)
+{
+  int64_t t_ns = msg.temperature * (DT * 1e9);
+  rclcpp::Time time(t_ns, RCL_ROS_TIME);
+  return builtin_interfaces::msg::Time(time);
 }

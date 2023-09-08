@@ -17,9 +17,11 @@ include_directories(
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(builtin_interfaces REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(nao_lola_sensor_msgs REQUIRED)
 find_package(nao_lola_command_msgs REQUIRED)
+find_package(rosgraph_msgs REQUIRED)
 find_package(Boost COMPONENTS system program_options filesystem REQUIRED)
 
 # build msgpack_parser_lib
@@ -27,8 +29,10 @@ add_library(msgpack_parser_lib SHARED
   src/msgpack_parser.cpp)
 
 ament_target_dependencies(msgpack_parser_lib
+  builtin_interfaces
   rclcpp
   nao_lola_sensor_msgs
+  rosgraph_msgs
   Boost)
 
 # build msgpack_packer_lib
