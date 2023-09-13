@@ -18,7 +18,6 @@
 #include <thread>
 #include <memory>
 #include <mutex>
-#include "builtin_interfaces/msg/time.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "nao_lola_sensor_msgs/msg/joint_positions.hpp"
 #include "nao_lola_sensor_msgs/msg/joint_stiffnesses.hpp"
@@ -47,7 +46,6 @@
 #include "nao_lola_command_msgs/msg/joint_stiffnesses.hpp"
 #include "nao_lola_client/connection.hpp"
 #include "nao_lola_client/msgpack_packer.hpp"
-#include "rosgraph_msgs/msg/clock.hpp"
 
 class NaoLolaClient : public rclcpp::Node
 {
@@ -73,7 +71,6 @@ private:
   rclcpp::Publisher<nao_lola_sensor_msgs::msg::Touch>::SharedPtr touch_pub;
   rclcpp::Publisher<nao_lola_sensor_msgs::msg::Battery>::SharedPtr battery_pub;
   rclcpp::Publisher<nao_lola_sensor_msgs::msg::RobotConfig>::SharedPtr robot_config_pub;
-  rclcpp::Publisher<rosgraph_msgs::msg::Clock>::SharedPtr pub_clock_;
 
   rclcpp::Subscription<nao_lola_command_msgs::msg::JointPositions>::SharedPtr joint_positions_sub;
   rclcpp::Subscription<nao_lola_command_msgs::msg::JointStiffnesses>::SharedPtr
@@ -93,9 +90,6 @@ private:
 
   MsgpackPacker packer;
   std::mutex packer_mutex;
-
-  builtin_interfaces::msg::Time batteryToTimestamp(
-    const nao_lola_sensor_msgs::msg::Battery & msg);
 };
 
 #endif  // NAO_LOLA_CLIENT__NAO_LOLA_CLIENT_HPP_

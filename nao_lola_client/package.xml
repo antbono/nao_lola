@@ -17,7 +17,6 @@
   <depend>nao_lola_command_msgs</depend>
   <depend>nao_lola_sensor_msgs</depend>
   <depend>boost</depend>
-  <depend>rosgraph_msgs</depend>
 
   <export>
     <build_type>ament_cmake</build_type>
