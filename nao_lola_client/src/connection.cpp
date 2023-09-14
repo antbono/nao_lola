@@ -27,7 +27,7 @@ Connection::Connection()
     if (ec) {
       RCLCPP_WARN_SKIPFIRST_THROTTLE(logger, clock, 1000, (std::string{"Could not connect to LoLA, retrying: "} + ec.message()).c_str());
     }
-  } while (ec);
+  } while (ec && rclcpp::ok());
 }
 
 std::array<char, MSGPACK_READ_LENGTH> Connection::receive()
