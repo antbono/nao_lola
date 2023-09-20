@@ -36,8 +36,7 @@
 class MsgpackPacker
 {
 public:
-  MsgpackPacker()
-  : logger(rclcpp::get_logger("msgpack packer")) {}
+  MsgpackPacker();
   std::string getPacked();
 
   void setJointPositions(const nao_lola_command_msgs::msg::JointPositions & jointPositions);

@@ -22,6 +22,60 @@
 #include "nao_lola_client/command_index_conversion.hpp"
 #include "rclcpp/rclcpp.hpp"
 
+class JointMinMax
+{
+public:
+  JointMinMax(float min, float max)
+  : min(min + 0.001), max(max - 0.001)
+  {
+  }
+
+  float min;
+  float max;
+};
+
+const static std::vector<JointMinMax> minMax = {
+  JointMinMax(-2.08567, 2.08567),  // HeadYaw
+  JointMinMax(-0.671952, 0.514872),  // HeadPitch
+  JointMinMax(-2.08567, 2.08567),  // LShoulderPitch
+  JointMinMax(-0.314159, 1.32645),  // LShoulderRoll
+  JointMinMax(-2.08567, 2.08567),  // LElbowYaw
+  JointMinMax(-1.54462, 0),  // LElbowRoll
+  JointMinMax(-1.82387, 1.82387),  // LWristYaw
+  JointMinMax(-1.14529, 0.740718),  // LHipYawPitch
+  JointMinMax(-0.379435, 0.79046),  // LHipRoll
+  JointMinMax(-1.77378, 0.48398),  // LHipPitch
+  JointMinMax(-0.0923279, 2.11255),  // LKneePitch
+  JointMinMax(-1.18944, 0.922581),  // LAnklePitch
+  JointMinMax(-0.397880, 0.769001),  // LAnkleRoll
+  JointMinMax(-0.738274, 0.449597),  // RHipRoll
+  JointMinMax(-1.77378, 0.48398),  // RHipPitch
+  JointMinMax(-0.0923279, 2.11255),  // RKneePitch
+  JointMinMax(-1.1863, 0.932006),  // RAnklePitch
+  JointMinMax(-0.768992, 0.397935),  // RAnkleRoll
+  JointMinMax(-2.08567, 2.08567),  // RShoulderPitch
+  JointMinMax(-1.32645, 0.314159),  // RShoulderRoll
+  JointMinMax(-2.08567, 2.08567),  // RElbowYaw
+  JointMinMax(0, 1.54462),  // RElbowRoll
+  JointMinMax(-1.82387, 1.82387),  // RWristYaw
+  JointMinMax(-1.0, 1.0),  // LHand
+  JointMinMax(-1.0, 1.0),  // RHand
+};
+
+float clampJointValue(LolaEnums::Joint lola_joint_index, float value)
+{
+  const auto & jointMinMax = minMax.at(static_cast<int>(lola_joint_index));
+  return std::min(jointMinMax.max, std::max(jointMinMax.min, value));
+}
+
+MsgpackPacker::MsgpackPacker()
+: logger(rclcpp::get_logger("msgpack packer"))
+{
+  for (int i = 0; i < static_cast<int>(LolaEnums::Joint::NUM_JOINTS); ++i) {
+    position.at(i) = clampJointValue(static_cast<LolaEnums::Joint>(i), position.at(i));
+  }
+}
+
 std::string MsgpackPacker::getPacked()
 {
   msgpack::zone z;
@@ -62,7 +116,8 @@ void MsgpackPacker::setJointPositions(
     int msg_joint_index = jointPositions.indexes[i];
     float joint_angle = jointPositions.positions[i];
     LolaEnums::Joint lola_joint_index = IndexConversion::joint_msg_to_lola.at(msg_joint_index);
-    position.at(static_cast<int>(lola_joint_index)) = joint_angle;
+    position.at(static_cast<int>(lola_joint_index)) =
+      clampJointValue(lola_joint_index, joint_angle);
   }
 }
 
