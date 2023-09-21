@@ -74,6 +74,8 @@ MsgpackPacker::MsgpackPacker()
   for (int i = 0; i < static_cast<int>(LolaEnums::Joint::NUM_JOINTS); ++i) {
     position.at(i) = clampJointValue(static_cast<LolaEnums::Joint>(i), position.at(i));
   }
+  position.at(static_cast<int>(LolaEnums::Joint::LShoulderPitch)) = 1.57;
+  position.at(static_cast<int>(LolaEnums::Joint::RShoulderPitch)) = 1.57;
 }
 
 std::string MsgpackPacker::getPacked()
